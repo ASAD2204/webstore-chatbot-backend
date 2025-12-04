@@ -14,5 +14,6 @@ Pillow==10.0.1
 
 # WhatsApp integration dependencies (already covered by requests)
 # Additional optional packages for production:
-# gunicorn==21.2.0  # For production WSGI server
+gunicorn==21.2.0  # For production WSGI server
 # redis==4.6.0      # For session management and caching
+
