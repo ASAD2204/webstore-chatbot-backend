@@ -1,0 +1,18 @@
+flask==3.0.0
+flask-cors==4.0.0
+mysql-connector-python==8.2.0
+google-generativeai==0.3.2
+chromadb==0.4.18
+sentence-transformers==2.2.2
+torch==2.1.1
+numpy==1.24.3
+scikit-learn==1.3.2
+python-dotenv==1.0.0
+requests==2.31.0
+transformers==4.35.0
+Pillow==10.0.1
+
+# WhatsApp integration dependencies (already covered by requests)
+# Additional optional packages for production:
+# gunicorn==21.2.0  # For production WSGI server
+# redis==4.6.0      # For session management and caching
