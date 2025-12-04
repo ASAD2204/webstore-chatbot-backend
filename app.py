@@ -151,8 +151,12 @@ class Config:
     
     # Vector Database Configuration
     # ChromaDB settings for semantic search and AI knowledge base
-    VECTOR_DB_PATH = "./vector_db"              # Local storage path for vector embeddings
-    EMBEDDING_MODEL = "all-MiniLM-L6-v2"       # Sentence transformer model for text embeddings
+    # Check if running on Azure with mounted storage
+    AZURE_MOUNT_PATH = "/mounts/models"
+    USE_AZURE_STORAGE = os.path.exists(AZURE_MOUNT_PATH)
+    
+    VECTOR_DB_PATH = f"{AZURE_MOUNT_PATH}/vector_db" if USE_AZURE_STORAGE else "./vector_db"
+    EMBEDDING_MODEL = f"{AZURE_MOUNT_PATH}/all-MiniLM-L6-v2" if USE_AZURE_STORAGE else "all-MiniLM-L6-v2"
 
 # ================================================================
 # 9. AI MODELS INITIALIZATION
@@ -194,7 +198,10 @@ if gemini_model is None:
 
 # Initialize sentence transformer for creating text embeddings
 # This model converts text into numerical vectors for similarity matching
+# Load embedding model from Azure Files or Hugging Face
+print(f"📂 Loading embedding model from: {Config.EMBEDDING_MODEL}")
 embedding_model = SentenceTransformer(Config.EMBEDDING_MODEL)
+print("✅ Embedding model loaded!")
 
 # ================================================================
 # 10. IMAGE PROCESSING MODELS INITIALIZATION
@@ -202,12 +209,15 @@ embedding_model = SentenceTransformer(Config.EMBEDDING_MODEL)
 # Initialize BLIP (Bootstrapped Language-Image Pre-training) for image analysis
 # These models can understand and describe images for product matching
 try:
-    # Load image captioning processor and model
-    image_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
-    image_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+    # Load BLIP model from Azure Files or Hugging Face
+    BLIP_MODEL_PATH = f"{Config.AZURE_MOUNT_PATH}/blip-image-captioning-base" if Config.USE_AZURE_STORAGE else "Salesforce/blip-image-captioning-base"
+    print(f"📂 Loading BLIP model from: {BLIP_MODEL_PATH}")
+    image_processor = BlipProcessor.from_pretrained(BLIP_MODEL_PATH)
+    image_model = BlipForConditionalGeneration.from_pretrained(BLIP_MODEL_PATH)
     logger.info("✅ Image processing models loaded successfully")
 except Exception as e:
-    logger.error(f"❌ Failed to load image processing models: {e}")
+    logger. error(f"❌ Failed to load image processing models: {e}")
+    image_processor = None
     image_model = None
 
 # ================================================================
@@ -226,6 +236,10 @@ except mysql.connector.Error as err:
 # ChromaDB Vector Database Initialization
 # Used for semantic search and AI knowledge base storage
 try:
+    # Ensure ChromaDB directory exists (especially on Azure Files mount)
+    os.makedirs(Config.VECTOR_DB_PATH, exist_ok=True)
+    print(f"📂 Initializing ChromaDB at: {Config. VECTOR_DB_PATH}")
+    
     # Create persistent client for vector database
     chroma_client = chromadb.PersistentClient(path=Config.VECTOR_DB_PATH)
     
@@ -235,10 +249,11 @@ try:
         logger.info("✅ Loaded existing ChromaDB collection")
     except:
         knowledge_collection = chroma_client.create_collection("webstore_knowledge")
-        logger.info("✅ Created new ChromaDB collection")
+        logger. info("✅ Created new ChromaDB collection")
         
 except Exception as e:
     logger.error(f"❌ ChromaDB initialization failed: {e}")
+    chroma_client = None
     knowledge_collection = None
 
 # ================================================================
@@ -3161,3 +3176,4 @@ if __name__ == '__main__':
 # ================================================================
 # END OF WEBSTORE AI CHATBOT BACKEND
 # ================================================================
+
