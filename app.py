@@ -123,7 +123,12 @@ app = Flask(__name__)
 app.secret_key = 'webstore-chatbot-secret-key-2025'  # Change in production
 
 # Configure CORS for cross-origin requests (frontend communication)
-CORS(app, origins=['http://localhost:3000', 'http://127.0.0.1:3000'], supports_credentials=True)
+CORS(app, origins=[
+    'http://localhost:3000', 
+    'http://127. 0.0.1:3000',
+    'webstore-ecommerce-f0h2cyh5h3ahdmae.uaenorth-01.azurewebsites.net',  # Add your frontend URL here
+    '*'  # Or allow all origins temporarily
+], supports_credentials=True)
 
 # ================================================================
 # 8. CONFIGURATION CLASS - CENTRALIZED SETTINGS
@@ -3176,4 +3181,5 @@ if __name__ == '__main__':
 # ================================================================
 # END OF WEBSTORE AI CHATBOT BACKEND
 # ================================================================
+
 
